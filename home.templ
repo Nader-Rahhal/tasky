@@ -1,0 +1,22 @@
+package main
+
+import (
+    "time"
+)
+
+templ home() {
+    <header>
+        <h1>Good { getGreeting(time.Now()) }</h1>
+    </header>
+}
+
+func getGreeting(t time.Time) string {
+    hour := t.Hour()
+    if hour < 12 {
+        return "Morning"
+    } else if hour < 18 {
+        return "Afternoon"
+    } else {
+        return "Evening"
+    }
+}

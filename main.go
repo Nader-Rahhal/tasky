@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	// "os"
+    // "context"
+    "net/http"
 
+    "github.com/a-h/templ"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	// "github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/joho/godotenv"
@@ -25,12 +28,17 @@ func init() {
 }
 
 func main() {
+
+    {/*
+
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(os.Getenv("AWS_REGION")),
 	})
+
 	if err != nil {
 		log.Fatalf("Failed to create session: %v", err)
 	}
+
 	svc := dynamodb.New(sess)
 	fmt.Println("Successfully started session")
 
@@ -43,17 +51,13 @@ func main() {
 	_, err = getAllTableItems(svc, tableName)
 	if err != nil {
 		log.Printf("Error getting all items: %v", err)
-	}
+    }
+	*/}
 
-	err = deleteTask(svc, tableName, "2")
-	if err != nil {
-		log.Printf("Error deleting task: %v", err)
-	}
-
-	_, err = getAllTableItems(svc, tableName)
-	if err != nil {
-		log.Printf("Error getting all items after deletion: %v", err)
-	}
+    component := home()
+    http.Handle("/", templ.Handler(component))
+    fmt.Println("Listening on :3000")
+	http.ListenAndServe(":3000", nil)
 }
 
 func putItem(svc *dynamodb.DynamoDB, tableName, id, title string) error {
