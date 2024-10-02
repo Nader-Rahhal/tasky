@@ -13,12 +13,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/joho/godotenv"
-)
 
-type Task struct {
-	ID    string `json:"ID"`
-	Title string `json:"Title"`
-}
+    "github.com/Nader-Rahhal/tasky/models"
+)
 
 func init() {
 	err := godotenv.Load()
@@ -61,7 +58,7 @@ func main() {
 }
 
 func putItem(svc *dynamodb.DynamoDB, tableName, id, title string) error {
-	item := Task{
+	item := models.Task{
 		ID:    id,
 		Title: title,
 	}
@@ -77,11 +74,11 @@ func putItem(svc *dynamodb.DynamoDB, tableName, id, title string) error {
 	return err
 }
 
-func getAllTableItems(svc *dynamodb.DynamoDB, tableName string) ([]Task, error) {
+func getAllTableItems(svc *dynamodb.DynamoDB, tableName string) ([]models.Task, error) {
 	input := &dynamodb.ScanInput{
 		TableName: aws.String(tableName),
 	}
-	var tasks []Task
+	var tasks []models.Task
 	var err error
 	for {
 		var result *dynamodb.ScanOutput
@@ -89,7 +86,7 @@ func getAllTableItems(svc *dynamodb.DynamoDB, tableName string) ([]Task, error) 
 		if err != nil {
 			return nil, fmt.Errorf("got error scanning table: %s", err)
 		}
-		var items []Task
+		var items []models.Task
 		err = dynamodbattribute.UnmarshalListOfMaps(result.Items, &items)
 		if err != nil {
 			return nil, fmt.Errorf("got error unmarshalling items: %s", err)

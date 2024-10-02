@@ -4,11 +4,19 @@ import (
     "time"
 )
 
+
+
 templ home() {
     <header>
         <h1>Good { getGreeting(time.Now()) }</h1>
+        @button("Add Task")
     </header>
 }
+
+templ button(text string){
+    <button>{ text }</button>
+}
+
 
 func getGreeting(t time.Time) string {
     hour := t.Hour()

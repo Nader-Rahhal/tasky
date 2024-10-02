@@ -1,4 +1,4 @@
-module tasky
+module github.com/Nader-Rahhal/tasky
 
 go 1.23.1
 
