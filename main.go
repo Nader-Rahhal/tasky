@@ -1,28 +1,62 @@
 package main
 
 import (
-    "net/http"
-    "github.com/labstack/echo/v4"
+    "fmt"
+    "log"
+    "os"
+
+    "github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/aws/session"
+    "github.com/aws/aws-sdk-go/service/dynamodb"
+    "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 type Task struct {
-    ID        string `json:"id"`
-    Title     string `json:"title"`
-    Completed bool   `json:"completed"`
-}
-
-var tasks = []Task{
-    {ID: "1", Title: "clean sink", Completed: false},
-    {ID: "2", Title: "clean room", Completed: false},
-    {ID: "3", Title: "clean floor", Completed: false},
-}
-
-func getTasks(c echo.Context) error {
-    return c.JSON(http.StatusOK, tasks)
+    ID    string `json:"id"`
+    Title string `json:"title"`
 }
 
 func main() {
-    e := echo.New()
-    e.GET("/tasks", getTasks)
-    e.Logger.Fatal(e.Start(":8080"))
+    awsRegion := os.Getenv("AWS_REGION")
+    if awsRegion == "" {
+        log.Fatal("AWS_REGION environment variable is not set")
+    }
+
+    // Initialize a session
+    sess, err := session.NewSession(&aws.Config{
+        Region: aws.String(awsRegion),
+    })
+    if err != nil {
+        log.Fatalf("Failed to create session: %v", err)
+    }
+
+    // Create DynamoDB client
+    svc := dynamodb.New(sess)
+
+    tableName := "Tasks"
+    err = putItem(svc, tableName, "1", "Complete Project")
+    if err != nil {
+        log.Fatalf("Got error calling PutItem: %s", err)
+    }
+    fmt.Println("Successfully put item")
+}
+
+func putItem(svc *dynamodb.DynamoDB, tableName, id, title string) error {
+    item := Task{
+        ID:    id,
+        Title: title,
+    }
+
+    av, err := dynamodbattribute.MarshalMap(item)
+    if err != nil {
+        return fmt.Errorf("got error marshalling map: %s", err)
+    }
+
+    input := &dynamodb.PutItemInput{
+        Item:      av,
+        TableName: aws.String(tableName),
+    }
+
+    _, err = svc.PutItem(input)
+    return err
 }
