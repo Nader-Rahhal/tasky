@@ -1,30 +1,50 @@
 package main
 
 import (
-    "time"
+"time"
 )
 
 
 
 templ home() {
-    <header>
+<header>
+    <div>
         <h1>Good { getGreeting(time.Now()) }</h1>
-        @button("Add Task")
-    </header>
+    </div>
+    <div>
+        @FetchTaskComponent()
+    </div>
+</header>
 }
 
-templ button(text string){
-    <button>{ text }</button>
-}
+templ FetchTaskComponent() {
+	<div id="task-container">
+		<button onclick="fetchTasks()">Fetch Tasks</button>
+		<ul id="task-list"></ul>
+	</div>
+	<script>
+		function fetchTasks() {
+			fetch('/tasks')
+				.then(response => response.json())
+				.then(tasks => {
+					const taskList = document.getElementById('task-list');
+					taskList.innerHTML = '';
+					tasks.forEach(task => {
+                        console.log(task)
+						const li = document.createElement('li');
+						li.textContent = task.Title;
+						taskList.appendChild(li);
+					});
+				})
+				.catch(error => console.error('Error:', error));
+		}
 
+		function showAddTaskForm() {
+			// Implement this function to show a form for adding a new task
+		}
+	</script>
+}
 
 func getGreeting(t time.Time) string {
-    hour := t.Hour()
-    if hour < 12 {
-        return "Morning"
-    } else if hour < 18 {
-        return "Afternoon"
-    } else {
-        return "Evening"
-    }
-}
+hour := t.Hour()
+if hour < 12 { return "Morning" } else if hour < 18 { return "Afternoon" } else { return "Evening" } }
