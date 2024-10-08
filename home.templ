@@ -1,50 +1,72 @@
 package main
 
 import (
-"time"
+    "time"
 )
 
-
-
 templ home() {
-<header>
-    <div>
-        <h1>Good { getGreeting(time.Now()) }</h1>
-    </div>
-    <div>
-        @FetchTaskComponent()
-    </div>
-</header>
+    <header>
+        <div>
+            <h1>Good { getGreeting(time.Now()) }</h1>
+        </div>
+        <div>
+            { FetchTaskComponent() }
+        </div>
+    </header>
 }
 
 templ FetchTaskComponent() {
-	<div id="task-container">
-		<button onclick="fetchTasks()">Fetch Tasks</button>
-		<ul id="task-list"></ul>
-	</div>
-	<script>
-		function fetchTasks() {
-			fetch('/tasks')
-				.then(response => response.json())
-				.then(tasks => {
-					const taskList = document.getElementById('task-list');
-					taskList.innerHTML = '';
-					tasks.forEach(task => {
-                        console.log(task)
-						const li = document.createElement('li');
-						li.textContent = task.Title;
-						taskList.appendChild(li);
-					});
-				})
-				.catch(error => console.error('Error:', error));
-		}
+    <div id="task-container">
+        <button onclick="fetchTasks()">Fetch Tasks</button>
+        <ul id="task-list"></ul>
+        <form id="addTaskForm">
+            <label for="taskTitle">Task Title:</label>
+            <input type="text" id="taskTitle" name="taskTitle" required>
+            <button type="submit">Add Task</button>
+        </form>
+    </div>
+    <script>
+        function fetchTasks() {
+            fetch('/tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    const taskList = document.getElementById('task-list');
+                    taskList.innerHTML = '';
+                    tasks.forEach(task => {
+                        const li = document.createElement('li');
+                        li.textContent = task.Title;
+                        taskList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-		function showAddTaskForm() {
-			// Implement this function to show a form for adding a new task
-		}
-	</script>
+        document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('taskTitle').value;
+            const id = Date.now().toString();
+            fetch(`/add-task?id=${id}&title=${encodeURIComponent(title)}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Task added:', data);
+                    fetchTasks();
+                })
+                .catch(error => console.error('Error:', error));
+            document.getElementById('taskTitle').value = '';
+        });
+
+        // Fetch tasks when the page loads
+        fetchTasks();
+    </script>
 }
 
 func getGreeting(t time.Time) string {
-hour := t.Hour()
-if hour < 12 { return "Morning" } else if hour < 18 { return "Afternoon" } else { return "Evening" } }
+    hour := t.Hour()
+    if hour < 12 {
+        return "Morning"
+    } else if hour < 18 {
+        return "Afternoon"
+    } else {
+        return "Evening"
+    }
+}
